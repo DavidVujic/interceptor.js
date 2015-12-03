@@ -10,26 +10,7 @@ var interceptor = (function () {
 		return Array.prototype.slice.call(args, 0);
 	};
 
-	var appendProperties = function (target, source) {
-		var modified = target;
-		var property;
-
-		for (property in source) {
-			if (!source.hasOwnProperty(property)) {
-				continue;
-			}
-
-			if (!modified[property]) {
-				modified[property] = source[property];
-			}
-		}
-
-		return modified;
-	};
-
-	var intercept = function (source, property, before, after) {
-		var original = source[property];
-
+	var intercept = function (source, before, after) {
 		return function () {
 			var args = toArray(arguments);
 
@@ -37,7 +18,7 @@ var interceptor = (function () {
 				before(args);
 			}
 
-			var result = original.apply(null, args);
+			var result = source.apply(null, args);
 
 			if (after) {
 				after(result);
@@ -47,9 +28,29 @@ var interceptor = (function () {
 		};
 	};
 
+	var modifyTarget = function (target, source, before, after) {
+		var staticProperty;
+
+		target = intercept(source, before, after);
+
+		for (staticProperty in source) {
+			if (!source.hasOwnProperty(staticProperty)) {
+				continue;
+			}
+
+			target[staticProperty] = source[staticProperty];
+		}
+
+		return target;
+	};
+
 	var create = function (source, before, after) {
 		var target = source;
 		var property;
+
+		if (typeof source === 'function') {
+			return modifyTarget(target, source, before, after);
+		}
 
 		for (property in source) {
 			if (!source.hasOwnProperty(property)) {
@@ -57,8 +58,7 @@ var interceptor = (function () {
 			}
 
 			if (typeof source[property] === 'function') {
-				target[property] = intercept(source, property, before, after);
-				target[property] = appendProperties(target[property], source[property]);
+				target[property] = modifyTarget(target[property], source[property], before, after);
 			}
 		}
 
