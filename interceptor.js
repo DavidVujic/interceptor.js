@@ -2,58 +2,70 @@
 var interceptor = (function () {
 	'use strict';
 
-	var addProperties = function (target, source) {
-		var prop;
-		var that = target;
+	var toArray = function (args) {
+		if (args.length === 1) {
+			return [args[0]];
+		}
 
-		for (prop in source) {
-			if (!source.hasOwnProperty(prop)) {
+		return Array.prototype.slice.call(args, 0);
+	};
+
+	var appendProperties = function (target, source) {
+		var modified = target;
+		var property;
+
+		for (property in source) {
+			if (!source.hasOwnProperty(property)) {
 				continue;
 			}
 
-			if (!that[prop]) {
-				that[prop] = source[prop];
+			if (!modified[property]) {
+				modified[property] = source[property];
 			}
-		}
-
-		return that;
-	};
-
-	var eachItem = function (obj, func) {
-		var that = obj;
-		var thatFunc;
-		var prop;
-
-		for (prop in obj) {
-			if (!obj.hasOwnProperty(prop)) {
-				continue;
-			}
-
-			thatFunc = obj[prop];
-
-			if (typeof obj[prop] === 'function') {
-				that[prop] = func(obj, prop);
-				that[prop] = addProperties(that[prop], thatFunc);
-			} else {
-				that[prop] = thatFunc;
-			}
-		}
-
-		return that;
-	};
-
-	var addTo = function (obj, interceptors) {
-		var i;
-		var modified;
-
-		for (i = 0; i < interceptors.length; i += 1) {
-			modified = eachItem(obj, interceptors[i]);
 		}
 
 		return modified;
 	};
 
+	var intercept = function (source, property, before, after) {
+		var original = source[property];
+
+		return function () {
+			var args = toArray(arguments);
+
+			if (before) {
+				before(args);
+			}
+
+			var result = original.apply(null, args);
+
+			if (after) {
+				after(result);
+			}
+
+			return result;
+		};
+	};
+
+	var create = function (source, before, after) {
+		var target = source;
+		var property;
+
+		for (property in source) {
+			if (!source.hasOwnProperty(property)) {
+				continue;
+			}
+
+			if (typeof source[property] === 'function') {
+				target[property] = intercept(source, property, before, after);
+				target[property] = appendProperties(target[property], source[property]);
+			}
+		}
+
+		return target;
+	};
+
 	return {
-		add: addTo
+		create: create
 	};
 }());
