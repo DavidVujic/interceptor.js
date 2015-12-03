@@ -4,10 +4,10 @@ var interceptor = (function () {
 
 	var toArray = function (args) {
 		if (args.length === 1) {
-			return [arguments[0]];
+			return [args[0]];
 		}
 
-		return Array.prototype.slice.call(arguments, 0);
+		return Array.prototype.slice.call(args, 0);
 	};
 
 	var appendProperties = function (target, source) {
@@ -33,11 +33,15 @@ var interceptor = (function () {
 		return function () {
 			var args = toArray(arguments);
 
-			before(args);
+			if (before) {
+				before(args);
+			}
 
 			var result = original.apply(null, args);
 
-			after(result);
+			if (after) {
+				after(result);
+			}
 
 			return result;
 		};
