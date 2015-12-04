@@ -1,8 +1,10 @@
 A lightweight library for intercepting JavaScript functions.
 
-# Example usage
+Example usages: for unit testing void functions and being able to keep track on how many calls have been made, or for logging purposes.
 
-Here's an JavaScript object.
+# Example code
+
+Here's a JavaScript object.
 
 ```javascript
 var obj = {
@@ -23,7 +25,7 @@ var after = function (result) {
   console.log('After function is run. Result: ' + result);
 };
 ```
-Pass the object to the interceptor, along with the before/after functions.
+Pass the object to the interceptor, along with the functions.
 
 ```javascript
 var interceptedObj = interceptor.create(obj, before, after);
@@ -32,5 +34,5 @@ var interceptedObj = interceptor.create(obj, before, after);
 Use the intercepted object.
 
 ```javascript
-interceptedObj.myFunc('Hello world');
+var result = interceptedObj.myFunc('Hello world');
 ```
