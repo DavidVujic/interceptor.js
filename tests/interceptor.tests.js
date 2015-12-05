@@ -3,24 +3,29 @@
 
 (function () {
 
-	var before = function (args) {
+	function before(args) {
 		console.log('(before) function args: ' + args);
-	};
+		before.called = true;
+	}
 
-	var after = function (result) {
+	function after(result) {
 		console.log('(after) returned from function: ' + result);
-	};
+		after.called = true;
+	}
 
 	var obj;
 
 	QUnit.module('Interceptor tests', {
 		setup: function () {
+
+			before.called = false;
+			after.called = false;
+
 			obj = {
 				myFunc: function (val) {
 					return val;
 				},
-				mySecondFunc: function () {
-				},
+				mySecondFunc: function () {},
 				myProp: 'A custom property'
 			};
 
@@ -31,40 +36,54 @@
 		}
 	});
 
-	QUnit.test('global object added', function (assert) {
-		assert.ok(interceptor, 'ok');
+	QUnit.test('return value is not modified', function (assert) {
+		var intercepted = interceptor.create(obj, 'myFunc', before, after);
+
+		var input = 'hello';
+		var expected = obj.myFunc(input);
+		var result = intercepted.myFunc(input);
+
+		assert.equal(expected, result);
 	});
 
-	QUnit.test('intercept function in custom object', function (assert) {
-		var result = interceptor.create(obj, before, after);
+	QUnit.test('return values are not modified', function (assert) {
+		var intercepted = interceptor.create(obj, ['myFunc', 'mySecondFunc'], before, after);
 
-		result.myFunc('function in object');
+		var input = 'hello';
+		var expected1 = obj.myFunc(input);
+		var result1 = intercepted.myFunc(input);
 
-		assert.ok(typeof result.myFunc === 'function');
-		assert.ok(typeof result.mySecondFunc === 'function');
+		var expected2 = obj.mySecondFunc();
+		var result2 = intercepted.mySecondFunc();
+
+		assert.equal(expected1, result1);
+		assert.equal(expected2, result2);
 	});
 
-	QUnit.test('intercept single function', function (assert) {
-		var func = interceptor.create(obj.myFunc, before, after);
+	QUnit.test('before and after functions are called', function (assert) {
+		var intercepted = interceptor.create(obj, 'myFunc', before, after);
 
-		func('single function');
+		intercepted.myFunc('hello world');
 
-		assert.ok(typeof func === 'function');
+		assert.equal(before.called, true);
+		assert.equal(after.called, true);
+	});
+
+	QUnit.test('after function is not called', function (assert) {
+		var intercepted = interceptor.create(obj, 'myFunc', before);
+
+		intercepted.myFunc('hello world');
+
+		assert.equal(before.called, true);
+		assert.equal(after.called, false);
 	});
 
 	QUnit.test('intercepted object is not corrupt', function (assert) {
-		var func = interceptor.create(obj, before, after);
+		var intercepted = interceptor.create(obj, 'mySecondFunc', before, after);
 
-		assert.ok(func.myProp === 'A custom property');
-		assert.ok(typeof func.mySecondFunc === 'function');
-		assert.ok(func.mySecondFunc.myVar === 'abc');
+		assert.ok(intercepted.myProp === 'A custom property');
+		assert.ok(intercepted.mySecondFunc.myVar === 'abc');
 	});
 
-	QUnit.test('intercepted function is not corrupt', function (assert) {
-		var func = interceptor.create(obj.mySecondFunc, before, after);
-
-		assert.ok(typeof func === 'function');
-		assert.ok(func.myVar === 'abc');
-	});
 
 }());

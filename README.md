@@ -18,17 +18,17 @@ In this scenario, we want to run code before and after a function is executed.
 
 ```javascript
 var before = function (args) {
-  console.log('Before function is run. Args: ' + args);
+  console.log('Before function is run. args: ' + args);
 };
 
 var after = function (result) {
-  console.log('After function is run. Result: ' + result);
+  console.log('After function is run. result: ' + result);
 };
 ```
-Pass the object to the interceptor, along with the functions.
+Pass the object to the interceptor, along with function name (as a string) or names (as an array).
 
 ```javascript
-var interceptedObj = interceptor.create(obj, before, after);
+var interceptedObj = interceptor.create(obj, 'myFunc' before, after);
 ```
 
 Use the intercepted object.

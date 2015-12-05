@@ -28,10 +28,8 @@ var interceptor = (function () {
 		};
 	};
 
-	var modifyTarget = function (target, source, before, after) {
+	var copyProperties = function (source, target) {
 		var staticProperty;
-
-		target = intercept(source, before, after);
 
 		for (staticProperty in source) {
 			if (!source.hasOwnProperty(staticProperty)) {
@@ -44,25 +42,31 @@ var interceptor = (function () {
 		return target;
 	};
 
-	var create = function (source, before, after) {
-		var target = source;
-		var property;
+	var isArray = function (obj) {
+		var toStr = Object.prototype.toString;
+		var expected = toStr.call([]);
 
-		if (typeof source === 'function') {
-			return modifyTarget(target, source, before, after);
+		return toStr.call(obj) === expected;
+	};
+
+	var create = function (obj, target, before, after) {
+		var modifiedObj = obj;
+		var i;
+		var func;
+		var modifiedFunc;
+
+		if (!isArray(target)) {
+			target = [target];
 		}
 
-		for (property in source) {
-			if (!source.hasOwnProperty(property)) {
-				continue;
-			}
+		for (i = 0; i < target.length; i += 1) {
+			func = modifiedObj[target[i]];
+			modifiedFunc = intercept(func, before, after);
 
-			if (typeof source[property] === 'function') {
-				target[property] = modifyTarget(target[property], source[property], before, after);
-			}
+			modifiedObj[target[i]] = copyProperties(func, modifiedFunc);
 		}
 
-		return target;
+		return modifiedObj;
 	};
 
 	return {
