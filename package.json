@@ -2,7 +2,7 @@
   "name": "interceptor.js",
   "version": "1.0.0",
   "description": "Lightweight interception/proxy library for JavaScript",
-  "main": "interceptor.js",
+  "main": "src/interceptor.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

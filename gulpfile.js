@@ -7,7 +7,7 @@ var qunit = require('node-qunit-phantomjs');
 var eslint = require('gulp-eslint');
 
 var files = [
-	'interceptor.js'
+	'src/interceptor.js'
 ];
 
 var testFiles = [];
@@ -24,7 +24,7 @@ gulp.task('minify', ['lint'], function () {
 	gulp.src(files)
 		.pipe(concat('interceptor.min.js'))
 		.pipe(uglify())
-		.pipe(gulp.dest('./'));
+		.pipe(gulp.dest('build'));
 });
 
 gulp.task('qunit', ['minify'], function () {
