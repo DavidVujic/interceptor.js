@@ -28,7 +28,7 @@ var after = function (result) {
 Pass the object to the interceptor, along with function name (as a string) or names (as an array).
 
 ```javascript
-var interceptedObj = interceptor.create(obj, 'myFunc' before, after);
+var interceptedObj = interceptor.create(obj, 'myFunc', before, after);
 ```
 
 Use the intercepted object.
